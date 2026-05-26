@@ -1,6 +1,8 @@
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 
 // Функция для обработки ошибок GLFW
 static void error_callback(int error, const char* description) {
@@ -22,7 +24,7 @@ int main(void) {
     glfwSetErrorCallback(error_callback);
 
     // 2. Создаем окно и контекст OpenGL
-    GLFWwindow* window = glfwCreateWindow(640, 480, "Простое окно GLFW", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(980, 720, "Простое окно GLFW", NULL, NULL);
     if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -30,6 +32,15 @@ int main(void) {
 
     // Делаем контекст окна текущим
     glfwMakeContextCurrent(window);
+
+    if (!gladLoadGL()) {
+        std::cout << "Can't load GLAD!" << "\n";
+        return -1;
+    }
+
+    std::cout << "OpenGL " << GLVersion.major << '.' << GLVersion.minor << "\n";
+
+    glClearColor(10, 1, 0, 1);
 
     // Включаем вертикальную синхронизацию
     glfwSwapInterval(1);
@@ -40,6 +51,7 @@ int main(void) {
     // 3. Главный цикл приложения
     while (!glfwWindowShouldClose(window)) {
         // Здесь происходит отрисовка (например, glClear, glDrawArrays и т.д.)
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // Меняем буферы (выводим нарисованное на экран)
         glfwSwapBuffers(window);
