@@ -1,7 +1,5 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
 #include "Renderer/ShaderProgram.h"
+#include "Resources/ResourceManager.h"
 
 // Функция для обработки ошибок GLFW
 static void error_callback(int error, const char* description) {
@@ -26,24 +24,6 @@ GLfloat colors[] = {
     0.0f, 0.0f, 1.0f
 };
 
-const char* vertex_shader =
-"#version 460\n"
-"layout(location = 0) in vec3 vertex_position;"
-"layout(location = 1) in vec3 vertex_color;"
-"out vec3 color;"
-"void main() {"
-"   color = vertex_color;"
-"   gl_Position = vec4(vertex_position, 1.0);"
-"}";
-
-const char* fragment_shader =
-"#version 460\n"
-"in vec3 color;"
-"out vec4 frag_color;"
-"void main() {"
-"   frag_color = vec4(color, 1.0);"
-"}";
-
 int g_windowSizeX = 640;
 int g_windowSizeY = 480;
 
@@ -53,7 +33,8 @@ static void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int heigth) {
     glViewport(0, 0, g_windowSizeX, g_windowSizeY);
 }
 
-int main(void) {
+int main(int argc, char** argv) {
+
     // 1. Инициализируем библиотеку GLFW
     if (!glfwInit()) {
         std::cout << "glfwInit failed!" << "\n";
@@ -91,57 +72,58 @@ int main(void) {
 
     glClearColor(1, 1, 0, 1);
 
-    std::string vertexShader(vertex_shader);
-    std::string fragmentShader(fragment_shader);
-    Renderer::ShaderProgram shaderProgram(vertexShader, fragmentShader);
-    if (!shaderProgram.isCompiled()) {
-        std::cerr << "Can't create shader program!\n";
-        return -1;
-    }
+    {
+        ResourceManager resourceManager(argv[0]);
+        auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
+        if (!pDefaultShaderProgram) {
+            std::cerr << "Can't create shader program: " << "DefaultShader\n";
+            return -1;
+        }
 
-    GLuint points_vbo = 0;
-    glGenBuffers(1, &points_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
+        GLuint points_vbo = 0;
+        glGenBuffers(1, &points_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
 
-    GLuint colors_vbo = 0;
-    glGenBuffers(1, &colors_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+        GLuint colors_vbo = 0;
+        glGenBuffers(1, &colors_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
 
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    // Включаем вертикальную синхронизацию
-    glfwSwapInterval(1);
-
-    // Устанавливаем callback-функцию для обработки клавиш
-    glfwSetKeyCallback(pWindow, key_callback);
-
-    // 3. Главный цикл приложения
-    while (!glfwWindowShouldClose(pWindow)) {
-        // Здесь происходит отрисовка (например, glClear, glDrawArrays и т.д.)
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        shaderProgram.use();
-
+        GLuint vao = 0;
+        glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        // Меняем буферы (выводим нарисованное на экран)
-        glfwSwapBuffers(pWindow);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-        // Обрабатываем события ввода (клики мыши, нажатия клавиш)
-        glfwPollEvents();
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        // Включаем вертикальную синхронизацию
+        glfwSwapInterval(1);
+
+        // Устанавливаем callback-функцию для обработки клавиш
+        glfwSetKeyCallback(pWindow, key_callback);
+
+        // 3. Главный цикл приложения
+        while (!glfwWindowShouldClose(pWindow)) {
+            // Здесь происходит отрисовка (например, glClear, glDrawArrays и т.д.)
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            pDefaultShaderProgram->use();
+
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            // Меняем буферы (выводим нарисованное на экран)
+            glfwSwapBuffers(pWindow);
+
+            // Обрабатываем события ввода (клики мыши, нажатия клавиш)
+            glfwPollEvents();
+        }
     }
 
     // 4. Освобождаем ресурсы и завершаем работу
