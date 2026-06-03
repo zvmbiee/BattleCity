@@ -7,11 +7,14 @@ add_executable(${PROJECT_NAME}
 	src/main.cpp 
 	src/Renderer/ShaderProgram.cpp
 	src/Renderer/ShaderProgram.h
+	src/Renderer/Texture2D.h
+	src/Renderer/Texture2D.cpp
 	src/Resources/ResourceManager.cpp
 	src/Resources/ResourceManager.h
+	src/Resources/stb_image.h
 )
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)

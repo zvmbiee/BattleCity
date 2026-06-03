@@ -1,6 +1,4 @@
 #pragma once
-#ifndef BATTLECITY_SHADERPROGRAM_H
-#define BATTLECITY_SHADERPROGRAM_H
 #include <glad/glad.h>
 #include <iostream>
 #include <GLFW/glfw3.h>
@@ -25,5 +23,3 @@ namespace Renderer {
 		GLuint m_ID = 0;
 	};
 }
-
-#endif BATTLECITY_SHADERPROGRAM_H
