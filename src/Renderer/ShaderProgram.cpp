@@ -60,6 +60,10 @@ namespace Renderer {
 		glUseProgram(m_ID);
 	}
 
+	void ShaderProgram::setInt(const std::string& name, const GLint& value) const{
+		glUniform1i(glGetUniformLocation(m_ID, name.c_str()), value);
+	}
+
 	 ShaderProgram& ShaderProgram::operator = (ShaderProgram&& shaderProgram) noexcept{
 		glDeleteProgram(m_ID);
 		m_ID = shaderProgram.m_ID;

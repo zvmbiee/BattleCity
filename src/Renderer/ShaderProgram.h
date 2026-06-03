@@ -10,12 +10,13 @@ namespace Renderer {
 		~ShaderProgram();
 		bool isCompiled() const { return m_isCompiled; }
 		void use() const;
+		void setInt(const std::string& name, const GLint& value) const;
 
 		ShaderProgram() = delete;
 		ShaderProgram(ShaderProgram&) = delete;
 		ShaderProgram& operator = (const ShaderProgram&) = delete;
-		ShaderProgram& operator = (ShaderProgram&&) noexcept;
-		ShaderProgram(ShaderProgram&&) noexcept;
+		ShaderProgram& operator = (ShaderProgram&& shaderProgram) noexcept;
+		ShaderProgram(ShaderProgram&& shaderProgram) noexcept;
 
 	private:
 		bool createSHader(const std::string& source, const GLenum shaderType, GLuint& shaderID);

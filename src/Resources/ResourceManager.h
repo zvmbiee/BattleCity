@@ -8,10 +8,6 @@
 #include "../Renderer/ShaderProgram.h"
 #include "../Renderer/Texture2D.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#include "stb_image.h"
-
 class ResourceManager {
 public:
 	ResourceManager(const std::string& executablePath);
