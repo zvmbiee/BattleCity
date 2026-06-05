@@ -1,6 +1,6 @@
 #version 460
 in vec3 color;
-int vec2 texCoords;
+in vec2 texCoords;
 out vec4 frag_color;
 
 uniform sampler2D tex;

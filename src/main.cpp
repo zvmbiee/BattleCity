@@ -1,6 +1,10 @@
 #include "Renderer/ShaderProgram.h"
 #include "Resources/ResourceManager.h"
 #include "Renderer/Texture2D.h"
+#include "Renderer/Sprite.h"
+#include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 // Функция для обработки ошибок GLFW
 static void error_callback(int error, const char* description) {
@@ -14,9 +18,9 @@ static void key_callback(GLFWwindow* pWindow, int key, int scancode, int action,
 }
 
 GLfloat point[] = {
-     0.0f,  0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f
+     0.0f,  50.f, 0.0f,
+     50.f, -50.f, 0.0f,
+    -50.f, -50.f, 0.0f
 };
 
 GLfloat colors[] = {
@@ -31,13 +35,12 @@ GLfloat texCoord[] = {
     0.0f, 0.0f
 };
 
-int g_windowSizeX = 640;
-int g_windowSizeY = 480;
+glm::ivec2 g_windowSize(640, 480);
 
 static void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int heigth) {
-    g_windowSizeX = width;
-    g_windowSizeY = heigth;
-    glViewport(0, 0, g_windowSizeX, g_windowSizeY);
+    g_windowSize.x = width;
+    g_windowSize.y = heigth;
+    glViewport(0, 0, g_windowSize.x, g_windowSize.y);
 }
 
 int main(int argc, char** argv) {
@@ -56,7 +59,7 @@ int main(int argc, char** argv) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // 2. Создаем окно и контекст OpenGL
-    GLFWwindow* pWindow = glfwCreateWindow(g_windowSizeX, g_windowSizeY, "Battle City", nullptr, nullptr);
+    GLFWwindow* pWindow = glfwCreateWindow(g_windowSize.x, g_windowSize.y, "Battle City", nullptr, nullptr);
     if (!pWindow) {
         std::cout << "glfwCreateWindow failed!" << "\n";
         glfwTerminate();
@@ -87,7 +90,16 @@ int main(int argc, char** argv) {
             return -1;
         }
 
+        auto pSpriteShaderProgram = resourceManager.loadShaders("SpriteShader", "res/shaders/vSprite.txt", "res/shaders/fSprite.txt");
+        if (!pDefaultShaderProgram) {
+            std::cerr << "Can't create shader program: " << "SpriteShader\n";
+            return -1;
+        }
+
         auto tex = resourceManager.loadTexture("DefaultTexture", "res/textures/map_16x16.png");
+
+        auto pSprite = resourceManager.loadSprite("NewSprite", "DefaultTexture", "SpriteShader", 200, 300);
+        pSprite->setPosition(glm::vec2(0, 180));
 
         GLuint points_vbo = 0;
         glGenBuffers(1, &points_vbo);
@@ -123,6 +135,22 @@ int main(int argc, char** argv) {
         pDefaultShaderProgram->use();
         pDefaultShaderProgram->setInt("tex", 0);
 
+        glm::mat4 mode1Matrix_1 = glm::mat4(1.f);
+        mode1Matrix_1 = glm::translate(mode1Matrix_1, glm::vec3(50.f, 50.f, 0.f));
+
+        glm::mat4 mode1Matrix_2 = glm::mat4(1.f);
+        mode1Matrix_2 = glm::translate(mode1Matrix_2, glm::vec3(150.f, 50.f, 0.f));
+
+        glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(g_windowSize.x), 0.f, static_cast<float>(g_windowSize.y), -100.f, 100.f);
+
+
+        pDefaultShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+
+        pSpriteShaderProgram->use();
+        pSpriteShaderProgram->setInt("pSprite", 0);
+
+        pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+
         // Включаем вертикальную синхронизацию
         glfwSwapInterval(1);
 
@@ -138,7 +166,14 @@ int main(int argc, char** argv) {
 
             glBindVertexArray(vao);
             tex->bind();
+
+            pDefaultShaderProgram->setMatrix4("modelMat", mode1Matrix_1);
             glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            pDefaultShaderProgram->setMatrix4("modelMat", mode1Matrix_2);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            pSprite->render();
 
             // Меняем буферы (выводим нарисованное на экран)
             glfwSwapBuffers(pWindow);

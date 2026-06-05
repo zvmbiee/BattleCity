@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include <glm/mat4x4.hpp>
 
 namespace Renderer {
 	class ShaderProgram {
@@ -11,6 +12,7 @@ namespace Renderer {
 		bool isCompiled() const { return m_isCompiled; }
 		void use() const;
 		void setInt(const std::string& name, const GLint& value) const;
+		void setMatrix4(const std::string& name, const glm::mat4& matrix);
 
 		ShaderProgram() = delete;
 		ShaderProgram(ShaderProgram&) = delete;
